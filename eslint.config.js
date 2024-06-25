@@ -10,6 +10,7 @@ export default antfu(
   {
     rules: {
       // overrides
+      '@typescript-eslint/no-unnecessary-type-constraint': 'error',
     },
   },
 )
