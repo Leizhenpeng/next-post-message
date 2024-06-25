@@ -12,7 +12,7 @@
         const npmB = new NextPostMessage(window, { channel: 'example_channel', enableDebug: true, maxWaitTime:1000 });
         npmB.onReceive(async (message) => {
             console.log('Received in Receiver:', message);
-            return 'Hello back from Receiver';
+            return `Hello back from receiver , get your msg :${message}`;
         });
     </script>
 </body>

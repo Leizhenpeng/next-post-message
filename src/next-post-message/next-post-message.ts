@@ -3,6 +3,7 @@ import { Responders } from './responders'
 import { proxyfy } from './util'
 import { Handlers } from './handlers'
 import { Debugger } from './Debugger'
+import { Postman } from './postman'
 
 export class NextPostMessage<Message = unknown, Answer = Message | void> {
   private handlers = new Handlers<Message, Answer>()
@@ -39,7 +40,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     },
   }
 
-  private debug(...message: any[]) {
+  debug(...message: any[]) {
     this.debugger.debug(...message)
   }
 
@@ -131,6 +132,13 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     return this.handlers.addHandler(handler)
   }
 
+  createPostman(targetWindow: Window, postManOptions?: Options): Postman<Message, Answer> {
+    const newOptions = {
+      ...this.options,
+      ...postManOptions,
+    }
+    return new Postman(this, targetWindow, newOptions)
+  }
   // removeHandler(msgId: MessageId): boolean {
   //   return this.handlers.removeHandler(msgId)
   // }
