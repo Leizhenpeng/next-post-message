@@ -10,8 +10,10 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
   private ignoreList: MessageId[] = []
   readonly options: Options<string>
   private debugger: Debugger
+  private receiveWindow = window
+  private targetWindow = window
 
-  constructor(private window: Window, options?: Options<string>) {
+  constructor(options?: Options<string>) {
     this.validateOptions(options)
     this.options = this.initializeOptions(options)
     this.setupMessageListener()
@@ -33,13 +35,14 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
   }
 
   private setupMessageListener() {
-    this.window.addEventListener('message', ({ data }) => {
+    this.receiveWindow.addEventListener('message', (event) => {
+      const { data } = event
       if (typeof data === 'object' && 'npmFlag' in data && data.npmFlag)
-        this.messageReceived(data as ProxyMessagePayload<Message>)
+        this.messageReceived(data as ProxyMessagePayload<Message>, event.source as Window)
     })
   }
 
-  private messageReceived(proxy: ProxyMessagePayload<Message>) {
+  private messageReceived(proxy: ProxyMessagePayload<Message>, eventSource: Window) {
     if (this.messageHandlers.shouldIgnore(proxy.msgId))
       return
 
@@ -49,7 +52,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     if (this.messageHandlers.isAnswer(proxy))
       this.messageHandlers.handleAnswer(proxy as ProxyMessagePayload<Answer>)
     else
-      this.messageHandlers.handleMessage(proxy)
+      this.messageHandlers.handleMessage(proxy, eventSource)
   }
 
   private messageHandlers = {
@@ -74,19 +77,21 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
       this.responders.resolveResponders(proxy)
     },
 
-    handleMessage: (proxy: ProxyMessagePayload<Message>) => {
+    handleMessage: (proxy: ProxyMessagePayload<Message>, eventSource: Window) => {
       this.debugger.debug('Received message from proxy <', proxy.msgId, '>.')
       this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
         this.ignoreList.push(answerProxy.msgId)
-        this.window.postMessage(answerProxy)
+        // 从发送的event.source中获取发送者的window对象
+        // const
+        eventSource.postMessage(answerProxy)
       })
     },
   }
 
-  post(message: Message, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {
+  post(message: Message, targetWindow: Window = window, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {
     const proxy = this.PostHelper.createProxyMessage(message)
     this.PostHelper.addToIgnoreList(proxy.msgId)
-    this.PostHelper.postMessage(proxy)
+    this.PostHelper.postMessage(proxy, targetWindow)
     this.PostHelper.logMessagePosted(proxy, custom_timeout)
     const answer = this.PostHelper.createAnswerPromise(proxy.msgId, custom_timeout)
     return { msgId: proxy.msgId, answer }
@@ -101,8 +106,8 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
       this.ignoreList.push(msgId)
     },
 
-    postMessage: (proxy: ProxyMessagePayload<Message>): void => {
-      this.window.postMessage(proxy)
+    postMessage: (proxy: ProxyMessagePayload<Message>, targetWindow: Window): void => {
+      targetWindow.postMessage(proxy)
     },
 
     logMessagePosted: (proxy: ProxyMessagePayload<Message>, custom_timeout?: number): void => {

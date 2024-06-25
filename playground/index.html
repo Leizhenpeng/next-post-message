@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sender</title>
+</head>
+
+<body>
+    <h1>Sender Window</h1>
+    <button id="send-message">Send Message</button>
+    <button id="post-msg">Post Message</button>
+    <div id="response"></div>
+    <iframe id="receiver-iframe" src="receiver.html" style="width:300px; height:100px;"></iframe>
+
+    <!-- 引用本地构建的 next-post-message 包 -->
+    <!-- <script src="../dist/index.mjs"></script> -->
+    <script type="module">
+        import { NextPostMessage }from '../dist/index.mjs';
+        const receiverIframe = document.getElementById('receiver-iframe').contentWindow;
+        // 创建 NextPostMessage 实例
+        const npmA = new NextPostMessage(receiverIframe, { channel: 'example_channel', enableDebug:true, maxWaitTime:2000 });
+        document.getElementById('send-message').addEventListener('click', () => {
+            // 发送消息并处理响应
+            const { answer } = npmA.post('Hello from Sender', receiverIframe);
+            answer.then(response => {
+                document.getElementById('response').innerText = 'Response received: ' + response;
+            }).catch(error => {
+                document.getElementById('response').innerText = 'Error occurred: ' + error;
+            });
+        });
+
+        document.getElementById('post-msg').addEventListener('click', () => {
+            // 发送消息并处理响应
+            const { answer } = npmA.post('Post message from Sender');
+            answer.then(response => {
+                document.getElementById('response').innerText = 'Response received: ' + response;
+            }).catch(error => {
+                document.getElementById('response').innerText = 'Error occurred: ' + error;
+            });
+        });
+    </script>
+</body>
+
+</html>

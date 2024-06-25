@@ -4,6 +4,9 @@
     "lib": ["ESNext", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "paths": {
+      "../dist/index.mjs": ["./dist/index.d.ts"]
+    },
     "resolveJsonModule": true,
     "types": ["vitest"],
     "strict": true,
@@ -11,5 +14,7 @@
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
-  }
+  },
+  "include": ["src/**/*.ts", "playground/"]
+
 }

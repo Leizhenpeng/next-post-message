@@ -1,4 +1,4 @@
 export * from './Debugger'
 export * from './handlers'
-export * from './NextPostMessage'
+export * from './next-post-message'
 export * from './responders'

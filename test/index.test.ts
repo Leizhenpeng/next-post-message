@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { channel } from 'node:diagnostics_channel'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JSDOM } from 'jsdom'
 import { NextPostMessage } from '../src'
