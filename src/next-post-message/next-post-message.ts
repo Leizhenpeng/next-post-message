@@ -10,36 +10,37 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
   private ignoreList: MessageId[] = []
   readonly options: Options<string>
   private debugger: Debugger
-  private receiveWindow = window
-  private targetWindow = window
+  private receiveWindow = window // 开启监听消息的窗口
+  private targetWindow = window // 发送消息去的窗口
 
   constructor(options?: Options<string>) {
-    this.validateOptions(options)
-    this.options = this.initializeOptions(options)
-    this.setupMessageListener()
+    this.initSteps.validateOptions(options)
+    this.options = this.initSteps.initializeOptions(options)
+    this.initSteps.setupMessageListener()
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
     this.debug('Instance created. CHANNEL =', this.options.channel || '<GLOBAL>')
   }
 
+  private initSteps = {
+    validateOptions: (options?: Options<string>) => {
+      if (options?.channel?.includes(':'))
+        throw new Error('Invalid channel name (note that channel cannot contain the character \':\').')
+    },
+    initializeOptions: (options?: Options<string>): Options<string> => {
+      return options || {}
+    },
+
+    setupMessageListener: () => {
+      this.receiveWindow.addEventListener('message', (event) => {
+        const { data } = event
+        if (typeof data === 'object' && 'npmFlag' in data && data.npmFlag)
+          this.onMessageReceived(data as ProxyMessagePayload<Message>, event.source as Window)
+      })
+    },
+  }
+
   private debug(...message: any[]) {
     this.debugger.debug(...message)
-  }
-
-  private validateOptions(options?: Options<string>) {
-    if (options?.channel?.includes(':'))
-      throw new Error('Invalid channel name (note that channel cannot contain the character \':\').')
-  }
-
-  private initializeOptions(options?: Options<string>): Options<string> {
-    return options || {}
-  }
-
-  private setupMessageListener() {
-    this.receiveWindow.addEventListener('message', (event) => {
-      const { data } = event
-      if (typeof data === 'object' && 'npmFlag' in data && data.npmFlag)
-        this.onMessageReceived(data as ProxyMessagePayload<Message>, event.source as Window)
-    })
   }
 
   private onMessageReceived(messagePayload: ProxyMessagePayload<Message>, sourceWindow: Window) {
@@ -81,14 +82,12 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
       this.debugger.debug('Received message from proxy <', proxy.msgId, '>.')
       this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
         this.ignoreList.push(answerProxy.msgId)
-        // 从发送的event.source中获取发送者的window对象
-        // const
         sourceWindow.postMessage(answerProxy)
       })
     },
   }
 
-  post(message: Message, targetWindow: Window = window, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {
+  post(message: Message, targetWindow: Window = this.targetWindow, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {
     const proxy = this.PostHelper.createProxyMessage(message)
     this.PostHelper.addToIgnoreList(proxy.msgId)
     this.PostHelper.postMessage(proxy, targetWindow)
@@ -132,7 +131,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     return this.handlers.addHandler(handler)
   }
 
-  removeHandler(msgId: MessageId): boolean {
-    return this.handlers.removeHandler(msgId)
-  }
+  // removeHandler(msgId: MessageId): boolean {
+  //   return this.handlers.removeHandler(msgId)
+  // }
 }
