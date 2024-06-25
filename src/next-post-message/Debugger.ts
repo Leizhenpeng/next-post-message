@@ -1,12 +1,10 @@
-import type { Options } from './types'
-
 export class Debugger {
-  constructor(private options: Options<string>) { }
+  constructor(private enableDebug: boolean, private channel?: string) { }
 
-  debug(...message: unknown[]) {
-    if (!this.options.enableDebug)
+  debug(...message: any[]) {
+    if (!this.enableDebug)
       return
     // eslint-disable-next-line no-console
-    console.debug(`[BetterPostMessage${this.options.tunnel ? ` - ${this.options.tunnel}` : ''}]>`, ...message)
+    console.debug(`[NextPostMessage${this.channel ? ` - ${this.channel}` : ''}]>`, ...message)
   }
 }
