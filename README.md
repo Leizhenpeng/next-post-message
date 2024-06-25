@@ -8,16 +8,39 @@
 
 🌳 Tiny & elegant & better windows post message
 
-> **Note**:
-> Replace `next-post-message`, `🌳 Tiny & elegant & better windows post message` and `leizhenpeng` globally to use this template.
+## Usage
 
-## Sponsors
+**Install the package**
+  ```sh
+   npm install next-post-message
+  ```
+ **Basic usage**
 
-<p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/leizhenpeng/static/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/leizhenpeng/static/sponsors.svg'/>
-  </a>
-</p>
+**Sender window (windowA)**:
+
+```js
+import { NextPostMessage } from 'next-post-message'
+
+const npmA = new NextPostMessage(window, { channel: 'example_channel' })
+
+const { answer } = npmA.post('Hello from A')
+
+answer
+  .then(response => console.log('Received in A:', response))
+  .catch(error => console.error('Error in A:', error))
+```
+ **Receiver window (windowB)**:
+
+```javascript
+import { NextPostMessage } from 'next-post-message'
+
+const npmB = new NextPostMessage(window, { channel: 'example_channel' })
+
+npmB.onReceive(async (message) => {
+  console.log('Received in B:', message)
+  return 'Hello back from B'
+})
+```
 
 ## License
 
