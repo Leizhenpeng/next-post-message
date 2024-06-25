@@ -44,12 +44,16 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     this.debugger.debug(...message)
   }
 
+  warn(...message: any[]) {
+    this.debugger.warn(...message)
+  }
+
   private onMessageReceived(messagePayload: ProxyMessagePayload<Message>, sourceWindow: Window) {
     if (this.msgHandlers.shouldIgnore(messagePayload.msgId))
       return
 
     if (this.msgHandlers.isMismatch(messagePayload))
-      return this.debugger.debug(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${this.options.channel}).`)
+      return this.debugger.warn(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${this.options.channel}).`)
 
     if (this.msgHandlers.isAnswer(messagePayload))
       this.msgHandlers.handleAnswer(messagePayload as ProxyMessagePayload<Answer>)
@@ -83,6 +87,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
       this.debugger.debug('Received message from proxy <', proxy.msgId, '>.')
       this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
         this.ignoreList.push(answerProxy.msgId)
+        this.debugger.debug('Answering proxy result:', answerProxy)
         sourceWindow.postMessage(answerProxy)
       })
     },
