@@ -1,5 +1,5 @@
 import type { Handler, HandlerId, Options, ProxyMessagePayload } from './types'
-import { proxyfy } from './util'
+import { createRandomString, proxyfy } from './util'
 
 interface HandlerProxy<Message, Answer> {
   msgId: HandlerId
@@ -36,6 +36,7 @@ export class Handlers<Message, Answer> {
   }
 
   private generateID(): HandlerId {
-    return `${Date.now()}-${Math.floor(Math.random() * 1000)}` as HandlerId
+    const randomString = createRandomString()
+    return `${Date.now()}-${randomString}` as HandlerId
   }
 }

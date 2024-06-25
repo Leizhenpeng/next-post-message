@@ -13,6 +13,7 @@ export interface ProxyMessagePayload<T> {
   data: T
   channel?: string
   origMsgId?: MessageId
+  error?: string
 }
 
 export type Handler<Message, Answer> = (message: Message) => Promise<Answer> | Answer

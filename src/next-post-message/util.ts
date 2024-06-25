@@ -8,7 +8,8 @@ export function createRandomString(): string {
 }
 
 export function generateID(tunnel?: string): MessageId {
-  return `${tunnel ? `${tunnel}::` : ''}${Date.now()}-${Math.floor(Math.random() * 1000)}` as MessageId
+  const randomString = createRandomString()
+  return `${tunnel ? `${tunnel}::` : ''}${Date.now()}-${randomString}` as MessageId
 }
 
 export function proxyfy<D>(data: D, options: Options<string>, id?: MessageId, origMsgId?: MessageId): ProxyMessagePayload<D> {

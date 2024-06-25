@@ -2,7 +2,7 @@ import type { Handler, MessageId, Options, ProxyMessagePayload } from './types'
 import { Responders } from './responders'
 import { proxyfy } from './util'
 import { Handlers } from './handlers'
-import { Debugger } from './Debugger'
+import { Debugger } from './debugger'
 import { Postman } from './postman'
 
 export class NextPostMessage<Message = unknown, Answer = Message | void> {
@@ -19,6 +19,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     this.options = this.initSteps.initializeOptions(options)
     this.initSteps.setupMessageListener()
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
+    this.responders.setLogger(this.debugger)
     this.debug('Instance created. CHANNEL =', this.options.channel || '<GLOBAL>')
   }
 
@@ -122,14 +123,9 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
 
     createAnswerPromise: (msgId: MessageId, custom_timeout?: number): Promise<Answer> => {
       const timeout = custom_timeout || this.options.maxWaitTime || 15_000
-      return Promise.race([
-        new Promise<Answer>((res) => {
-          this.responders.addResponder(msgId, res)
-        }),
-        new Promise<never>((_, rej) => {
-          setTimeout(() => rej(new Error('Response timeout reached.')), timeout)
-        }),
-      ])
+      return new Promise<Answer>((resolve, reject) => {
+        this.responders.addResponder(msgId, resolve, reject, timeout)
+      })
     },
   }
 

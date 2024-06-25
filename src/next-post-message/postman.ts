@@ -1,4 +1,4 @@
-import { Debugger } from './Debugger'
+import { Debugger } from './debugger'
 import type { NextPostMessage } from './next-post-message'
 import type { MessageId, Options } from './types'
 
