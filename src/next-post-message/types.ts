@@ -1,4 +1,5 @@
 export type MessageId = string
+export type HandlerId = string
 
 export interface Options<T = string> {
   channel?: T

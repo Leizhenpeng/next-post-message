@@ -39,87 +39,88 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     })
   }
 
-  private isAnswer(proxy: ProxyMessagePayload<Message | Answer>): proxy is ProxyMessagePayload<Answer> {
-    return !!('origMsgId' in proxy && proxy.origMsgId)
-  }
-
   private messageReceived(proxy: ProxyMessagePayload<Message>) {
-    if (this.shouldIgnoreMessage(proxy.msgId))
+    if (this.messageHandlers.shouldIgnore(proxy.msgId))
       return
 
-    if (this.isChannelMismatch(proxy))
+    if (this.messageHandlers.isMismatch(proxy))
       return this.debugger.debug(`Blocked proxy from channel ${proxy.channel} because it doesn't match this channel (${this.options.channel}).`)
 
-    if (this.isAnswer(proxy))
-      this.handleAnswer(proxy as ProxyMessagePayload<Answer>)
+    if (this.messageHandlers.isAnswer(proxy))
+      this.messageHandlers.handleAnswer(proxy as ProxyMessagePayload<Answer>)
     else
-      this.handleMessage(proxy)
+      this.messageHandlers.handleMessage(proxy)
   }
 
-  private shouldIgnoreMessage(msgId: MessageId): boolean {
-    const index = this.ignoreList.indexOf(msgId)
-    if (index >= 0) {
-      this.ignoreList.splice(index, 1)
-      return true
-    }
-    return false
+  private messageHandlers = {
+    isAnswer(proxy: ProxyMessagePayload<Message | Answer>): proxy is ProxyMessagePayload<Answer> {
+      return !!('origMsgId' in proxy && proxy.origMsgId)
+    },
+
+    shouldIgnore: (msgId: MessageId): boolean => {
+      const index = this.ignoreList.indexOf(msgId)
+      if (index >= 0) {
+        this.ignoreList.splice(index, 1)
+        return true
+      }
+      return false
+    },
+
+    isMismatch: (proxy: ProxyMessagePayload<Message>): boolean => {
+      return !!(this.options.channel && proxy.channel && this.options.channel !== proxy.channel)
+    },
+
+    handleAnswer: (proxy: ProxyMessagePayload<Answer>) => {
+      this.responders.resolveResponders(proxy)
+    },
+
+    handleMessage: (proxy: ProxyMessagePayload<Message>) => {
+      this.debugger.debug('Received message from proxy <', proxy.msgId, '>.')
+      this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
+        this.ignoreList.push(answerProxy.msgId)
+        this.window.postMessage(answerProxy)
+      })
+    },
   }
-
-  private isChannelMismatch(proxy: ProxyMessagePayload<Message>): boolean {
-    return !!(this.options.channel && proxy.channel && this.options.channel !== proxy.channel)
-  }
-
-  private handleAnswer(proxy: ProxyMessagePayload<Answer>) {
-    this.responders.resolveResponders(proxy)
-  }
-
-  private handleMessage(proxy: ProxyMessagePayload<Message>) {
-    this.debugger.debug('Received message from proxy <', proxy.msgId, '>.')
-    this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
-      this.ignoreList.push(answerProxy.msgId)
-      this.window.postMessage(answerProxy)
-    })
-  }
-  // private messageReceived(proxy: ProxyMessagePayload<Message>) {
-  //   const ignoredIndex = this.ignoreThoseProxies.indexOf(proxy.msgId)
-  //   if (ignoredIndex >= 0) {
-  //     this.ignoreThoseProxies.splice(ignoredIndex, 1)
-  //     return
-  //   }
-
-  //   if (this.options.channel && proxy.channel && this.options.channel !== proxy.channel)
-  //     return this.debug(`Blocked proxy from channel ${proxy.channel} because it doesn't match this channel (${this.options.channel}).`)
-
-  //   if (this.isAnswer(proxy)) {
-  //     this.responders.resolveResponders(proxy)
-  //   }
-  //   else {
-  //     this.debug('Received message from proxy <', proxy.msgId, '>.')
-  //     this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
-  //       this.ignoreThoseProxies.push(answerProxy.msgId)
-  //       this.window.postMessage(answerProxy)
-  //     })
-  //   }
-  // }
 
   post(message: Message, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {
-    const proxy = proxyfy(message, this.options)
-    this.ignoreList.push(proxy.msgId)
-    this.window.postMessage(proxy)
-
-    const timeout = custom_timeout || this.options.maxWaitTime || 15_000
-    this.debug('Proxified message posted:', proxy, '(answer timeout:', timeout / 1000, 'seconds).')
-
-    const answer: ReturnType<typeof this.post>['answer'] = Promise.race([
-      new Promise<Answer>((res) => {
-        this.responders.addResponder(proxy.msgId, res)
-      }),
-      new Promise<never>((_, rej) => {
-        setTimeout(() => rej(new Error('Response timeout reached.')), timeout)
-      }),
-    ])
-
+    const proxy = this.PostHelper.createProxyMessage(message)
+    this.PostHelper.addToIgnoreList(proxy.msgId)
+    this.PostHelper.postMessage(proxy)
+    this.PostHelper.logMessagePosted(proxy, custom_timeout)
+    const answer = this.PostHelper.createAnswerPromise(proxy.msgId, custom_timeout)
     return { msgId: proxy.msgId, answer }
+  }
+
+  private PostHelper = {
+    createProxyMessage: (message: Message): ProxyMessagePayload<Message> => {
+      return proxyfy(message, this.options)
+    },
+
+    addToIgnoreList: (msgId: MessageId): void => {
+      this.ignoreList.push(msgId)
+    },
+
+    postMessage: (proxy: ProxyMessagePayload<Message>): void => {
+      this.window.postMessage(proxy)
+    },
+
+    logMessagePosted: (proxy: ProxyMessagePayload<Message>, custom_timeout?: number): void => {
+      const timeout = custom_timeout || this.options.maxWaitTime || 15_000
+      this.debugger.debug('Proxified message posted:', proxy, '(answer timeout:', timeout / 1000, 'seconds).')
+    },
+
+    createAnswerPromise: (msgId: MessageId, custom_timeout?: number): Promise<Answer> => {
+      const timeout = custom_timeout || this.options.maxWaitTime || 15_000
+      return Promise.race([
+        new Promise<Answer>((res) => {
+          this.responders.addResponder(msgId, res)
+        }),
+        new Promise<never>((_, rej) => {
+          setTimeout(() => rej(new Error('Response timeout reached.')), timeout)
+        }),
+      ])
+    },
   }
 
   onReceive(handler: Handler<Message, Answer>): MessageId {

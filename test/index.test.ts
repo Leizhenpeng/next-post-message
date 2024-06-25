@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { channel } from 'node:diagnostics_channel'
-import type { MockInstance } from 'vitest'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JSDOM } from 'jsdom'
 import { NextPostMessage } from '../src'
-import { Handlers } from '../src/next-post-message/handlers'
 
 describe('should', () => {
   let dom: JSDOM
@@ -24,16 +22,51 @@ describe('should', () => {
     })
   })
 
-  describe('channel ', () => {
-    it('should throw error if tunnel name contains \':\'', () => {
-      const options = { channel: 'invalid:channel' }
-      expect(() => new NextPostMessage(window, options)).toThrowError()
+  describe('options', () => {
+    describe('channel', () => {
+      it('should throw error if tunnel name contains \':\'', () => {
+        const options = { channel: 'invalid:channel' }
+        expect(() => new NextPostMessage(window, options)).toThrowError()
+      })
+      it('should create instance', () => {
+        const options = { channel: 'valid_tunnel' }
+        const bpm = new NextPostMessage(window, options)
+        expect(bpm.options).toEqual(options)
+      })
     })
 
-    it('should create instance', () => {
-      const options = { channel: 'valid_tunnel' }
-      const bpm = new NextPostMessage(window, options)
-      expect(bpm.options).toEqual(options)
+    describe('maxWaitTime', () => {
+      it('should timeout if no answer is received', async () => {
+        const npm = new NextPostMessage(window, { maxWaitTime: 100 }) // short timeout for test
+        const { answer } = npm.post('Hello')
+        await expect(answer).rejects.toThrow('Response timeout reached.')
+      })
+
+      it('should not timeout if answer is received within maxWaitTime', async () => {
+        const npm = new NextPostMessage(window, { maxWaitTime: 1000, enableDebug: true })
+        const handler = vi.fn(_msg => Promise.resolve('Hello back'))
+        npm.onReceive(handler)
+
+        const { msgId, answer } = npm.post('Hello')
+
+        setTimeout(() => {
+          window.dispatchEvent(new MessageEvent('message', { data: { npmFlag: true, msgId, data: 'Hello' } }))
+
+          const response = { npmFlag: true, msgId, data: 'Hello back', origMsgId: msgId }
+          window.dispatchEvent(new MessageEvent('message', { data: response }))
+        }, 100)
+
+        await expect(answer).resolves.toBe('Hello back')
+      })
+    })
+
+    it('should enable debug mode and log debug messages', () => {
+      const consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => { })
+      const options = { enableDebug: true }
+      const npm = new NextPostMessage(window, options)
+      npm.post('Hello')
+      expect(consoleDebugSpy).toHaveBeenCalled()
+      consoleDebugSpy.mockRestore()
     })
   })
 
@@ -57,14 +90,6 @@ describe('should', () => {
       const testMessage = { npmFlag: true, msgId: '1-2', data: 'Test' }
       window.dispatchEvent(new MessageEvent('message', { data: testMessage }))
       expect(postMessageSpy).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('options', () => {
-    it('should correctly timeout if no answer is received', async () => {
-      const npm = new NextPostMessage(window, { maxWaitTime: 100 }) // short timeout for test
-      const { answer } = npm.post('Hello')
-      await expect(answer).rejects.toThrow('Response timeout reached.')
     })
   })
 })
