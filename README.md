@@ -21,14 +21,14 @@ Sending messages has never been easier:
 ```javascript
 import { NextPostMessage } from 'next-post-message'
 
-const targetWindow = document.getElementById('iframeB').contentWindow
-const npmA = new NextPostMessage({ channel: 'example_channel' })
+const tgtWin = document.getElementById('iframeB').contentWindow
+const npm = new NextPostMessage({ channel: '/chat' })
 
-const { answer } = npmA.post('Hello from A', targetWindow)
+const { answer } = npm.post('Hello!', tgtWin)
 
 answer
-  .then(response => console.log('Received in A:', response))
-  .catch(error => console.error('Error in A:', error))
+  .then(res => console.log('Received：', res))
+  .catch(err => console.error('Error：', err))
 ```
 
 ### Receiver Window (windowB)
@@ -37,17 +37,16 @@ In the receiver window, set up a handler to receive messages and send responses:
 ```javascript
 import { NextPostMessage } from 'next-post-message'
 
-const npmB = new NextPostMessage({ channel: 'example_channel' })
+const npm = new NextPostMessage({ channel: '/chat' })
 
-npmB.onReceive(async (message) => {
-  console.log('Received in B:', message)
-  return 'Hello back from B'
+npm.onReceive(async (msg) => {
+  console.log('Received :', msg)
+  return 'Hello back'
 })
 ```
 
 ## Advanced Usage
 
-### Why Use the `Postman` Class?
 Let's be honest, specifying the target window every time you send a message can get tedious.
 
 That's where the `Postman` class comes in. It helps manage message sending with custom options and a pre-specified target window.
@@ -56,8 +55,8 @@ That's where the `Postman` class comes in. It helps manage message sending with 
 ```javascript
 import { NextPostMessage } from 'next-post-message'
 
-const targetWindowB = document.getElementById('iframeB').contentWindow
-const npmA = new NextPostMessage({ channel: 'example_channel' })
+const tgtWin = document.getElementById('iframeB').contentWindow
+const npm = new NextPostMessage({ channel: '/detail/blog' })
 
 const postman = npmA.createPostman(targetWindowB, {
   maxWaitTime: 20000, // Custom timeout 20 seconds
@@ -65,8 +64,8 @@ const postman = npmA.createPostman(targetWindowB, {
 })
 
 // Now you can send messages without specifying the window every time
-const { answer } = postman.post('Hello from A through Postman')
-const { answer: answer2 } = postman.post('Hello again from A through Postman')
+const { answer } = postman.post('Hello from through Postman')
+const { answer: answer2 } = postman.post('Hello again through Postman')
 // ...
 ```
 
@@ -74,11 +73,11 @@ const { answer: answer2 } = postman.post('Hello again from A through Postman')
 ```javascript
 import { NextPostMessage } from 'next-post-message'
 
-const npmB = new NextPostMessage({ channel: 'example_channel', enableDebug: true })
+const npm = new NextPostMessage({ channel: '/detail/blog', enableDebug: true })
 
-npmB.onReceive(async (message) => {
-  console.log('Received in B with debug:', message)
-  return 'Hello back from B with debug'
+npm.onReceive(async (msg) => {
+  console.log('Received in:', message)
+  return 'Hello back'
 })
 ```
 
