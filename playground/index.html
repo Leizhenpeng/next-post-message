@@ -15,10 +15,10 @@
     <!-- 引用本地构建的 next-post-message 包 -->
     <!-- <script src="../dist/index.mjs"></script> -->
     <script type="module">
-        import { NextPostMessage }from '../dist/index.mjs';
+        import { Npm }from '../dist/index.mjs';
         const receiverIframe = document.getElementById('receiver-iframe').contentWindow;
         // 创建 NextPostMessage 实例
-        const npmA = new NextPostMessage( { channel: 'example_channel', enableDebug:true, maxWaitTime:1000 });
+        const npmA = new Npm( { channel: 'example_channel', enableDebug:true, maxWaitTime:1000 });
 
         document.getElementById('send-message').addEventListener('click', () => {
             // 发送消息并处理响应

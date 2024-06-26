@@ -140,7 +140,8 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     }
     return new Postman(this, targetWindow, newOptions)
   }
-  // removeHandler(msgId: MessageId): boolean {
-  //   return this.handlers.removeHandler(msgId)
-  // }
+
+  removeHandler(msgId: MessageId): boolean {
+    return this.handlers.removeHandler(msgId)
+  }
 }

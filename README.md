@@ -19,10 +19,10 @@ pnpm install next-post-message
 Sending messages has never been easier:
 
 ```javascript
-import { NextPostMessage } from 'next-post-message'
+import { Npm } from 'next-post-message'
 
 const tgtWin = document.getElementById('iframeB').contentWindow
-const npm = new NextPostMessage({ channel: '/chat' })
+const npm = new Npm({ channel: '/chat' })
 
 const { answer } = npm.post('Hello!', tgtWin)
 
@@ -35,9 +35,9 @@ answer
 In the receiver window, set up a handler to receive messages and send responses:
 
 ```javascript
-import { NextPostMessage } from 'next-post-message'
+import { Npm } from 'next-post-message'
 
-const npm = new NextPostMessage({ channel: '/chat' })
+const npm = new Npm({ channel: '/chat' })
 
 npm.onReceive(async (msg) => {
   console.log('Received :', msg)
@@ -53,10 +53,10 @@ That's where the `Postman` class comes in. It helps manage message sending with 
 
 #### Sender Window (windowA)
 ```javascript
-import { NextPostMessage } from 'next-post-message'
+import { Npm } from 'next-post-message'
 
 const tgtWin = document.getElementById('iframeB').contentWindow
-const npm = new NextPostMessage({ channel: '/detail/blog' })
+const npm = new Npm({ channel: '/detail/blog' })
 
 const postman = npmA.createPostman(targetWindowB, {
   maxWaitTime: 20000, // Custom timeout 20 seconds
@@ -71,9 +71,9 @@ const { answer: answer2 } = postman.post('Hello again through Postman')
 
 #### Receiver Window (windowB)
 ```javascript
-import { NextPostMessage } from 'next-post-message'
+import { Npm } from 'next-post-message'
 
-const npm = new NextPostMessage({ channel: '/detail/blog', enableDebug: true })
+const npm = new Npm({ channel: '/detail/blog', enableDebug: true })
 
 npm.onReceive(async (msg) => {
   console.log('Received in:', message)

@@ -8,8 +8,8 @@
 <body>
     <h1>Receiver Window</h1>
 <script type="module">
-     import { NextPostMessage } from '../dist/index.mjs';
-        const npmB = new NextPostMessage({ channel: 'example_channel', enableDebug: true, maxWaitTime:1000 });
+     import { Npm } from '../dist/index.mjs';
+        const npmB = new Npm({ channel: 'example_channel', enableDebug: true, maxWaitTime:1000 });
         // npmB.onReceive(async (message) => {
         //     return `Hello back from receiver , get your msg :${message}`;
         // });
