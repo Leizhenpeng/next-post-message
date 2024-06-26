@@ -1,7 +1,7 @@
 {
   "name": "next-post-message",
   "type": "module",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "packageManager": "pnpm@9.1.1",
   "description": "🌳 Tiny & elegant & better windows post message",
   "author": "leizhenpeng <laolei@forkway.cn>",
