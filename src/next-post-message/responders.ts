@@ -45,7 +45,6 @@ export class Responders<Answer> {
   }
 
   private deleteResponders(proxyID: MessageId) {
-    this.warn('Deleting responders for proxyID:', proxyID)
     this.responders = this.responders.filter(r => r.proxyID !== proxyID)
   }
 
@@ -55,6 +54,7 @@ export class Responders<Answer> {
       clearTimeout(r.timeoutId)
       r.promiseRejecter(reason)
     }
+    this.warn('Reject responders for proxyID:', proxyID)
     this.deleteResponders(proxyID)
   }
 

@@ -20,13 +20,12 @@ export class Postman<Message, Answer> {
     this.targetWindow = targetWindow || window
     this.options = options
     this.debugger = new Debugger(options.enableDebug || false, options.channel)
-    this.debugger.debug('Postman instance created.')
 
+    this.debugger.debug('Postman instance created.')
     this.responders.setLogger(this.debugger)
-    this.getMan = new GetMan<Message, Answer>(this.options)
-    this.getMan.setResponders(this.responders)
+
+    this.getMan = new GetMan<Message, Answer>(this.options, this.responders)
     this.getMan.start()
-    this.debugger.debug('GetMan instance for postman created.')
   }
 
   post(message: Message, targetWindow: Window = this.targetWindow, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {

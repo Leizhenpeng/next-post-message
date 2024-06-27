@@ -12,10 +12,14 @@ export class GetMan<Message = unknown, Answer = Message | void> {
   private listening = false
   private responders = {} as Responders<Answer> // postMan 需要设置 responders
 
-  constructor(options: Options<string>) {
-    this.options = options as Options<string>
+  constructor(options: Options<string>, responders?: Responders<Answer>) {
+    this.options = options
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
-    this.debug('GetMan instance created.')
+    this.responders = responders ?? this.responders
+    if (this.isForPostman)
+      this.debug('GetMan instance for postman created.')
+    else
+      this.debug('GetMan instance created.')
   }
 
   setResponders(responders: Responders<Answer>) {
