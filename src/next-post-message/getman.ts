@@ -15,7 +15,7 @@ export class GetMan<Message = unknown, Answer = Message | void> {
   constructor(options: Options<string>) {
     this.options = options as Options<string>
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
-    this.debug('GetMan instance created. CHANNEL =', this.options.channel || '<GLOBAL>')
+    this.debug('GetMan instance created.')
   }
 
   setResponders(responders: Responders<Answer>) {
@@ -27,7 +27,7 @@ export class GetMan<Message = unknown, Answer = Message | void> {
       return
     this.receiveWindow.addEventListener('message', this.onMessageReceived)
     this.listening = true
-    this.debug('Listening started.')
+    // this.debug('GetMan listening started.')
   }
 
   stop() {
@@ -35,7 +35,7 @@ export class GetMan<Message = unknown, Answer = Message | void> {
       return
     this.receiveWindow.removeEventListener('message', this.onMessageReceived)
     this.listening = false
-    this.debug('Listening stopped.')
+    this.debug('GetMan listening stopped.')
   }
 
   private onMessageReceived = (event: MessageEvent) => {
@@ -51,10 +51,14 @@ export class GetMan<Message = unknown, Answer = Message | void> {
     if (this.msgHandlers.isMismatch(messagePayload))
       return this.debugger.warn(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${this.options.channel}).`)
 
-    if (this.msgHandlers.isAnswer(messagePayload))
+    if (this.isForPostman && this.msgHandlers.isAnswer(messagePayload))
       return this.msgHandlers.handleAnswer(messagePayload)
-    else
+    if (!this.msgHandlers.isAnswer(messagePayload))
       this.msgHandlers.handleMessage(messagePayload, sourceWindow)
+  }
+
+  get isForPostman() {
+    return this.responders && Object.keys(this.responders).length > 0
   }
 
   private msgHandlers = {
