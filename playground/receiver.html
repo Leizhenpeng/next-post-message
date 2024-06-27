@@ -10,7 +10,7 @@
 <script type="module">
      import { Npm } from '../dist/index.mjs';
         const npmB = new Npm({enableDebug: true, maxWaitTime:3000 });
-        const aGetMan = npmB.createGetman({
+        const aGetMan = npmB.createGetMan({
              channel: 'example_channel', 
         });
         aGetMan.onReceive(async (message) => {

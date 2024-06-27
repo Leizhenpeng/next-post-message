@@ -1,7 +1,7 @@
 import type { Handler, MessageId, Options } from './types'
 import { Responders } from './responders'
 import { Debugger } from './debugger'
-import { PostMan } from './PostMan'
+import { PostMan } from './postman'
 import { GetMan } from './getman'
 
 export class NextPostMessage<Message = unknown, Answer = Message | void> {
@@ -29,7 +29,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     this.debugger.debug(...message)
   }
 
-  createGetman(optionos?: Options): GetMan<Message, Answer> {
+  createGetMan(optionos?: Options): GetMan<Message, Answer> {
     const newOptions = {
       ...this.options,
       ...optionos,
@@ -40,7 +40,7 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
   }
 
   onReceive(handler: Handler<Message, Answer>): MessageId {
-    const getMan = this.createGetman(this.options)
+    const getMan = this.createGetMan(this.options)
     return getMan.onReceive(handler)
   }
 

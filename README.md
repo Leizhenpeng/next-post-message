@@ -49,6 +49,7 @@ npm.onReceive(async (msg) => {
 
 ## Advanced Usage
 
+### 🚀 PostMan
 Let's be honest, specifying the target window every time you send a message can get tedious.
 
 That's where the `PostMan` class comes in. It helps manage message sending with custom options and a pre-specified target window.
@@ -81,6 +82,28 @@ npm.onReceive(async (msg) => {
   console.log('Received in:', message)
   return 'Hello back'
 })
+```
+
+### 🚀 GetMan
+Using Multiple `GetMan` Instances for Listening Different Channels
+
+#### Receiver Window (windowB)
+```javascript
+import { Npm } from 'next-post-message'
+
+const npm = new Npm({ enableDebug: true })
+
+// Chat listener
+const chat = npm.createGetMan({ channel: '/chat' })
+chat.onReceive(msg => console.log('Chat:', msg))
+
+// Updates listener
+const updates = npm.createGetMan({ channel: '/update' })
+updates.onReceive(msg => console.log('Update:', msg))
+
+// Notifications listener
+const notes = npm.createGetMan({ channel: '/notifications' })
+notes.onReceive(msg => console.log('Note:', msg))
 ```
 
 Hope these examples help you get started quickly and make the most of `NextPostMessage`!
