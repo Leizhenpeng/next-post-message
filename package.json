@@ -7,12 +7,12 @@
   "author": "leizhenpeng <laolei@forkway.cn>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/leizhenpeng",
-  "homepage": "https://github.com/leizhenepng/next-post-message#readme",
+  "homepage": "https://github.com/leizhenpeng/next-post-message#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leizhenepng/next-post-message.git"
+    "url": "git+https://github.com/leizhenpeng/next-post-message.git"
   },
-  "bugs": "https://github.com/leizhenepng/next-post-message/issues",
+  "bugs": "https://github.com/leizhenpeng/next-post-message/issues",
   "keywords": [],
   "sideEffects": false,
   "exports": {
