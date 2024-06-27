@@ -27,9 +27,9 @@
             });
         });
 
-        const aPostMan = npmA.createPostman(receiverIframe)
+        const aPostMan = npmA.createPostMan(receiverIframe)
         document.getElementById('post-msg').addEventListener('click', () => {
-            const { answer } = aPostMan.post('Post message from Postman');
+            const { answer } = aPostMan.post('Post message from PostMan');
             answer.then(response => {
                 document.getElementById('response').innerText = 'Response received: ' + response;
             }).catch(error => {

@@ -10,14 +10,14 @@ export class GetMan<Message = unknown, Answer = Message | void> {
   private debugger: Debugger
   private receiveWindow = window
   private listening = false
-  private responders = {} as Responders<Answer> // postMan 需要设置 responders
+  private responders = {} as Responders<Answer> // PostMan 需要设置 responders
 
   constructor(options: Options<string>, responders?: Responders<Answer>) {
     this.options = options
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
     this.responders = responders ?? this.responders
-    if (this.isForPostman)
-      this.debug('GetMan instance for postman created.')
+    if (this.isForPostMan)
+      this.debug('GetMan instance for PostMan created.')
     else
       this.debug('GetMan instance created.')
   }
@@ -55,13 +55,13 @@ export class GetMan<Message = unknown, Answer = Message | void> {
     if (this.msgHandlers.isMismatch(messagePayload))
       return this.debugger.warn(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${this.options.channel}).`)
 
-    if (this.isForPostman && this.msgHandlers.isAnswer(messagePayload))
+    if (this.isForPostMan && this.msgHandlers.isAnswer(messagePayload))
       return this.msgHandlers.handleAnswer(messagePayload)
     if (!this.msgHandlers.isAnswer(messagePayload))
       this.msgHandlers.handleMessage(messagePayload, sourceWindow)
   }
 
-  get isForPostman() {
+  get isForPostMan() {
     return this.responders && Object.keys(this.responders).length > 0
   }
 

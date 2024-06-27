@@ -5,7 +5,7 @@ import { Responders } from './responders'
 import type { MessageId, Options, ProxyMessagePayload } from './types'
 import { proxyfy } from './util'
 
-export class Postman<Message, Answer> {
+export class PostMan<Message, Answer> {
   private targetWindow: Window
   private options: Options
   private debugger: Debugger
@@ -21,7 +21,7 @@ export class Postman<Message, Answer> {
     this.options = options
     this.debugger = new Debugger(options.enableDebug || false, options.channel)
 
-    this.debugger.debug('Postman instance created.')
+    this.debugger.debug('PostMan instance created.')
     this.responders.setLogger(this.debugger)
 
     this.getMan = new GetMan<Message, Answer>(this.options, this.responders)

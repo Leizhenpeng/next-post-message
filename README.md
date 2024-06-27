@@ -51,7 +51,7 @@ npm.onReceive(async (msg) => {
 
 Let's be honest, specifying the target window every time you send a message can get tedious.
 
-That's where the `Postman` class comes in. It helps manage message sending with custom options and a pre-specified target window.
+That's where the `PostMan` class comes in. It helps manage message sending with custom options and a pre-specified target window.
 
 #### Sender Window (windowA)
 ```javascript
@@ -60,14 +60,14 @@ import { Npm } from 'next-post-message'
 const tgtWin = document.getElementById('iframeB').contentWindow
 const npm = new Npm({ channel: '/detail/blog' })
 
-const postman = npmA.createPostman(targetWindowB, {
+const PostMan = npmA.createPostMan(targetWindowB, {
   maxWaitTime: 20000, // Custom timeout 20 seconds
   enableDebug: true
 })
 
 // Now you can send messages without specifying the window every time
-const { answer } = postman.post('Hello from through Postman')
-const { answer: answer2 } = postman.post('Hello again through Postman')
+const { answer } = PostMan.post('Hello from through PostMan')
+const { answer: answer2 } = PostMan.post('Hello again through PostMan')
 // ...
 ```
 

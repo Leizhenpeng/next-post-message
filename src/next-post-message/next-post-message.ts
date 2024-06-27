@@ -1,7 +1,7 @@
 import type { Handler, MessageId, Options } from './types'
 import { Responders } from './responders'
 import { Debugger } from './debugger'
-import { Postman } from './postman'
+import { PostMan } from './PostMan'
 import { GetMan } from './getman'
 
 export class NextPostMessage<Message = unknown, Answer = Message | void> {
@@ -44,16 +44,16 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     return getMan.onReceive(handler)
   }
 
-  createPostman(targetWindow: Window, postManOptions?: Options): Postman<Message, Answer> {
+  createPostMan(targetWindow: Window, PostManOptions?: Options): PostMan<Message, Answer> {
     const newOptions = {
       ...this.options,
-      ...postManOptions,
+      ...PostManOptions,
     }
-    return new Postman(targetWindow, newOptions)
+    return new PostMan(targetWindow, newOptions)
   }
 
   post(message: Message, targetWindow: Window = window): { msgId: MessageId, answer: Promise<Answer> } {
-    const newPostMan = this.createPostman(targetWindow)
+    const newPostMan = this.createPostMan(targetWindow)
     return newPostMan.post(message)
   }
 }
