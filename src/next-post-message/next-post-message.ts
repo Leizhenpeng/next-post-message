@@ -4,20 +4,24 @@ import { proxyfy } from './util'
 import { Handlers } from './handlers'
 import { Debugger } from './debugger'
 import { Postman } from './postman'
+import { GetMan } from './getman'
 
 export class NextPostMessage<Message = unknown, Answer = Message | void> {
-  private handlers = new Handlers<Message, Answer>()
   private responders = new Responders<Answer>()
   private ignoreList: MessageId[] = []
   readonly options: Options<string>
   private debugger: Debugger
-  private receiveWindow = window // 开启监听消息的窗口
+  private getMan: GetMan<Message, Answer>
   private targetWindow = window // 发送消息去的窗口
 
   constructor(options?: Options<string>) {
     this.initSteps.validateOptions(options)
     this.options = this.initSteps.initializeOptions(options)
-    this.initSteps.setupMessageListener()
+
+    this.getMan = new GetMan<Message, Answer>(this.options)
+    this.getMan.setResponders(this.responders)
+    this.getMan.start() // 开启监听消息
+
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
     this.responders.setLogger(this.debugger)
     this.debug('Instance created. CHANNEL =', this.options.channel || '<GLOBAL>')
@@ -31,14 +35,6 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     initializeOptions: (options?: Options<string>): Options<string> => {
       return options || {}
     },
-
-    setupMessageListener: () => {
-      this.receiveWindow.addEventListener('message', (event) => {
-        const { data } = event
-        if (typeof data === 'object' && 'npmFlag' in data && data.npmFlag)
-          this.onMessageReceived(data as ProxyMessagePayload<Message>, event.source as Window)
-      })
-    },
   }
 
   debug(...message: any[]) {
@@ -47,51 +43,6 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
 
   warn(...message: any[]) {
     this.debugger.warn(...message)
-  }
-
-  private onMessageReceived(messagePayload: ProxyMessagePayload<Message>, sourceWindow: Window) {
-    if (this.msgHandlers.shouldIgnore(messagePayload.msgId))
-      return
-
-    if (this.msgHandlers.isMismatch(messagePayload))
-      return this.debugger.warn(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${this.options.channel}).`)
-
-    if (this.msgHandlers.isAnswer(messagePayload))
-      this.msgHandlers.handleAnswer(messagePayload as ProxyMessagePayload<Answer>)
-    else
-      this.msgHandlers.handleMessage(messagePayload, sourceWindow)
-  }
-
-  private msgHandlers = {
-    isAnswer(proxy: ProxyMessagePayload<Message | Answer>): proxy is ProxyMessagePayload<Answer> {
-      return !!('origMsgId' in proxy && proxy.origMsgId)
-    },
-
-    shouldIgnore: (msgId: MessageId): boolean => {
-      const index = this.ignoreList.indexOf(msgId)
-      if (index >= 0) {
-        this.ignoreList.splice(index, 1)
-        return true
-      }
-      return false
-    },
-
-    isMismatch: (proxy: ProxyMessagePayload<Message>): boolean => {
-      return !!(this.options.channel && proxy.channel && this.options.channel !== proxy.channel)
-    },
-
-    handleAnswer: (proxy: ProxyMessagePayload<Answer>) => {
-      this.responders.resolveResponders(proxy)
-    },
-
-    handleMessage: (proxy: ProxyMessagePayload<Message>, sourceWindow: Window) => {
-      this.debugger.debug('Received message from proxy <', proxy.msgId, '>.')
-      this.handlers.handleMessage(proxy, this.options, (answerProxy) => {
-        this.ignoreList.push(answerProxy.msgId)
-        this.debugger.debug('Answering proxy result:', answerProxy)
-        sourceWindow.postMessage(answerProxy)
-      })
-    },
   }
 
   post(message: Message, targetWindow: Window = this.targetWindow, custom_timeout?: number): { msgId: MessageId, answer: Promise<Answer> } {
@@ -130,7 +81,11 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
   }
 
   onReceive(handler: Handler<Message, Answer>): MessageId {
-    return this.handlers.addHandler(handler)
+    return this.getMan.onReceive(handler)
+  }
+
+  removeHandler(msgId: MessageId): boolean {
+    return this.getMan.removeHandler(msgId)
   }
 
   createPostman(targetWindow: Window, postManOptions?: Options): Postman<Message, Answer> {
@@ -141,7 +96,13 @@ export class NextPostMessage<Message = unknown, Answer = Message | void> {
     return new Postman(this, targetWindow, newOptions)
   }
 
-  removeHandler(msgId: MessageId): boolean {
-    return this.handlers.removeHandler(msgId)
+  createGetman(optionos?: Options): GetMan<Message, Answer> {
+    const newOptions = {
+      ...this.options,
+      ...optionos,
+    }
+    const aGetMan = new GetMan(newOptions)
+    aGetMan.start()
+    return aGetMan as any
   }
 }

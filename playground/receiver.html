@@ -9,15 +9,18 @@
     <h1>Receiver Window</h1>
 <script type="module">
      import { Npm } from '../dist/index.mjs';
-        const npmB = new Npm({ channel: 'example_channel', enableDebug: true, maxWaitTime:1000 });
-        // npmB.onReceive(async (message) => {
-        //     return `Hello back from receiver , get your msg :${message}`;
-        // });
-        
-        npmB.onReceive( async (message) => {
-            await new Promise(resolve => setTimeout(resolve, 3000));
+        const npmB = new Npm({enableDebug: true, maxWaitTime:3000 });
+        const aGetMan = npmB.createGetman({
+             channel: 'example_channel', 
+        });
+        aGetMan.onReceive(async (message) => {
             return `Hello back from receiver , get your msg :${message}`;
         });
+        
+        // npmB.onReceive( async (message) => {
+        //     await new Promise(resolve => setTimeout(resolve, 3000));
+        //     return `Hello back from receiver , get your msg :${message}`;
+        // });
     </script>
 </body>
 

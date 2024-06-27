@@ -12,8 +12,6 @@
     <div id="response"></div>
     <iframe id="receiver-iframe" src="receiver.html" style="width:300px; height:100px;"></iframe>
 
-    <!-- 引用本地构建的 next-post-message 包 -->
-    <!-- <script src="../dist/index.mjs"></script> -->
     <script type="module">
         import { Npm }from '../dist/index.mjs';
         const receiverIframe = document.getElementById('receiver-iframe').contentWindow;
@@ -21,7 +19,6 @@
         const npmA = new Npm( { channel: 'example_channel', enableDebug:true, maxWaitTime:1000 });
 
         document.getElementById('send-message').addEventListener('click', () => {
-            // 发送消息并处理响应
             const { answer } = npmA.post('Hello from plain sender', receiverIframe);
             answer.then(response => {
                 document.getElementById('response').innerText = 'Response received: ' + response;
@@ -32,7 +29,6 @@
 
         const aPostMan = npmA.createPostman(receiverIframe)
         document.getElementById('post-msg').addEventListener('click', () => {
-            // 发送消息并处理响应
             const { answer } = aPostMan.post('Post message from Postman');
             answer.then(response => {
                 document.getElementById('response').innerText = 'Response received: ' + response;
