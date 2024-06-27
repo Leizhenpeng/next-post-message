@@ -8,6 +8,8 @@
 
 🌳 Tiny & elegant & better windows post message,simple bnd powerful.
 
+  <img src='https://github.com/Leizhenpeng/next-post-message/assets/50035229/b2258dc9-2dc7-4f11-bf9d-d4e76855becd' alt='Npm Example' width='600'/>
+
 ## Install the packag
 
 ```sh
