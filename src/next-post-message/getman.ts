@@ -16,6 +16,7 @@ export class GetMan<Message = unknown, Answer = Message | void> {
     this.options = options
     this.debugger = new Debugger(this.options.enableDebug || false, this.options.channel)
     this.responders = responders ?? this.responders
+
     if (this.isForPostMan)
       this.debug('GetMan instance for PostMan created.')
     else
@@ -49,16 +50,24 @@ export class GetMan<Message = unknown, Answer = Message | void> {
   }
 
   private handleMessageReceived(messagePayload: ProxyMessagePayload<Message>, sourceWindow: Window) {
-    if (this.msgHandlers.shouldIgnore(messagePayload.msgId))
+    const { msgHandlers, isForPostMan, options, debugger: debug } = this
+
+    if (msgHandlers.shouldIgnore(messagePayload.msgId))
       return
 
-    if (this.msgHandlers.isMismatch(messagePayload))
-      return this.debugger.warn(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${this.options.channel}).`)
+    if (msgHandlers.isMismatch(messagePayload))
+      return debug.warn(`Blocked proxy from channel ${messagePayload.channel} because it doesn't match this channel (${options.channel}).`)
 
-    if (this.isForPostMan && this.msgHandlers.isAnswer(messagePayload))
-      return this.msgHandlers.handleAnswer(messagePayload)
-    if (!this.msgHandlers.isAnswer(messagePayload))
-      this.msgHandlers.handleMessage(messagePayload, sourceWindow)
+    const isAnswer = msgHandlers.isAnswer(messagePayload)
+
+    if (isForPostMan) {
+      if (isAnswer)
+        msgHandlers.handleAnswer(messagePayload)
+    }
+    else {
+      if (!isAnswer)
+        msgHandlers.handleMessage(messagePayload, sourceWindow)
+    }
   }
 
   get isForPostMan() {
