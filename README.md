@@ -10,7 +10,7 @@
 
   <img src='https://github.com/Leizhenpeng/next-post-message/assets/50035229/b2258dc9-2dc7-4f11-bf9d-d4e76855becd' alt='Npm Example' width='600'/>
 
-## Install the packag
+## Install the package
 
 ```sh
 pnpm install next-post-message
@@ -61,15 +61,13 @@ import { Npm } from 'next-post-message'
 const tgtWin = document.getElementById('iframeB').contentWindow
 const npm = new Npm({ channel: '/detail/blog' })
 
-const PostMan = npmA.createPostMan(targetWindowB, {
-  maxWaitTime: 20000, // Custom timeout 20 seconds
+const postMan = npm.createPostMan(tgtWin, {
+  maxWaitTime: 20000,
   enableDebug: true
 })
 
-// Now you can send messages without specifying the window every time
-const { answer } = PostMan.post('Hello from through PostMan')
-const { answer: answer2 } = PostMan.post('Hello again through PostMan')
-// ...
+const { answer: answer1 } = postMan.post('Hello through PostMan')
+const { answer: answer2 } = postMan.post('Hello again through PostMan')
 ```
 
 #### Receiver Window (windowB)
@@ -93,17 +91,11 @@ import { Npm } from 'next-post-message'
 
 const npm = new Npm({ enableDebug: true })
 
-// Chat listener
-const chat = npm.createGetMan({ channel: '/chat' })
-chat.onReceive(msg => console.log('Chat:', msg))
+const getMan = npm.createGetMan({ channel: '/chat' })
+getMan.onReceive(msg => console.log('Chat:', msg))
 
-// Updates listener
-const updates = npm.createGetMan({ channel: '/update' })
-updates.onReceive(msg => console.log('Update:', msg))
-
-// Notifications listener
-const notes = npm.createGetMan({ channel: '/notifications' })
-notes.onReceive(msg => console.log('Note:', msg))
+const getMan2 = npm.createGetMan({ channel: '/update' })
+getMan2.onReceive(msg => console.log('Update:', msg))
 ```
 
 Hope these examples help you get started quickly and make the most of `NextPostMessage`!
